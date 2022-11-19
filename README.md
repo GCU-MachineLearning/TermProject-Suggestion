@@ -11,7 +11,9 @@ data preprocessing 의 경우 ./datasets/data_utils.py 의 Data class      내�
 machine learning   의 경우 ./models/ml.py           의 ML class        내부의 matrix_factorisation, classification, clustering 함수를 작성 해 주시면 됩니다.  
 filtering          의 경우 ./models/filtering.py    의 Filtering class 내부의 model_based, memory_based, hybrid 함수를 작성 해 주시면 됩니다.  
 
-이 코드를 colab 등에서 실행 시키 시려면, 
-1. 이 코드를 google drive 에 올리고,
-2. google drive 에서 colab 을 실행 시키고, colab 에서 google drive 에 접근한 뒤, main.py 가 존재하는 경로로 cd 한 뒤,
-3. !python main.py 커맨드 를 입력 하면 됩니다. 혹은 !sh runner.sh (일반적인 터미널 명령 앞에 ! 붙여 주면 colab 에서 실행 가능 합니다.)
+이 코드 를 colab 등에서 실행 시키 시려면, 
+1. 이 프로젝트 전체를 google drive 에 올리고,
+2. google drive 에서 colab 을 실행 시키고, colab 에서 google drive 에 접근한 뒤, main.py 가 존재하는 경로로 이동한 뒤, 
+3. !python main.py 커맨드 를 입력 하면 됩니다. (일반적인 터미널 명령 앞에 ! 붙여 주면 colab 에서 실행 가능 합니다.)  
+
+추후 각 모듈들의 개발이 전부 끝나면 최종적으로 전체 흐름을 다시 정리하여 마무리 진행 하겠습니다.  
