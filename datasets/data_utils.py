@@ -120,5 +120,17 @@ class Data(object):
         print(item_frame.isnull().sum())    
         print(ratings.isnull().sum())
         
+        # user_frame에서 성별,직업 칼럼을 떼어내서 인코딩
+        le = LabelEncoder()    
+        e1 = pd.DataFrame(le.fit_transform(user_frame['sex']), columns = ['sex'])
+        e2 = pd.DataFrame(le.fit_transform(user_frame['occupation']), columns = ['occupation'])
+
+        # user_frame에서 성별, 직업 칼럼 drop
+        user_frame = user_frame.drop(['sex', 'occupation'], axis=1)
+
+        # user_frame에 인코딩한 새로운 두 칼럼 concat
+        user_frame = pd.concat([user_frame, e1], axis=1)
+        user_frame = pd.concat([user_frame, e2], axis=1)
+        
         return ratings, n_users, n_items, user_frame, item_frame, test_data
 
