@@ -11,6 +11,8 @@ Dataset: ml-100k (http://grouplens.org/datasets/movielens/100k/)
 
 import os
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
 
 
 """ << 지울 주석 >>
@@ -19,10 +21,12 @@ import pandas as pd
 혹 더 필요 하시 다면, 아래의 load_~ 함수를 추가 해 주시면 될 것 같습니다. 
 
 """
+print("Dd")
 
 
 class Data(object):
     def __init__(self, data_dir, dataset):
+        print("1")
         """
         :param: data_dir: directory of
         :param: dataset: dataset name
@@ -31,6 +35,7 @@ class Data(object):
         self.dataset = dataset
 
     def load_data(self):
+        print("2")
         """
         Load data from data directory.
         :return: dataframe, n_users, n_items
@@ -42,6 +47,7 @@ class Data(object):
         return data, n_users, n_items
 
     def load_user(self):
+        print("3")
         """
         Load user information.
         :return: user_frame
@@ -83,6 +89,7 @@ class Data(object):
     # 그런데 데이터 가 너무 깨끗 해서, 어느 부분에 대해 전처리 를 진행 해야 할 지 잘 모르겠습니다. 
     """
     def _helper_function(self):
+        print("4")
         """
         :param: 추가 하실 파라미터 에 대한 간략한 설명
         :param: 또 다른 파라미터 에 대한 간략한 설명
@@ -91,6 +98,7 @@ class Data(object):
         pass  # helper function for preprocessing.
 
     def preprocess(self):
+        print("5")
         """
         :param: 추가 하실 파라미터 에 대한 간략한 설명
         :return: return 값에 대한 간략한 설명
@@ -101,4 +109,16 @@ class Data(object):
         item_frame = self.load_item()
         test_data = self.load_test()
         self._helper_function()
+        
+        # 의미없고 null 값이 대부분인 칼럼들을 item_frame에서 drop
+        item_frame.drop(item_frame.columns[3], axis =1, inplace=True)    
+        item_frame.drop(item_frame.columns[5], axis =1, inplace=True)    
+        item_frame.dropna(axis=0, inplace=True)
+        
+        # 3가지 데이터프레임에서의 null 값 확인
+        print(user_frame.isnull().sum())    
+        print(item_frame.isnull().sum())    
+        print(ratings.isnull().sum())
+        
         return ratings, n_users, n_items, user_frame, item_frame, test_data
+
