@@ -28,6 +28,7 @@ def main(root_dir, dataset):
     # - ML HANDLER: ml_handler.train() / test()
     # - FILTERING HANDLER: filtering_handler.train() / test()
     data_handler = data_utils.Data(root_dir, dataset)
+    data_handler.preprocess()
 
     # Throw data_handler to below model handler
     # so that can handle data in model handler if needed
