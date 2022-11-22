@@ -110,7 +110,7 @@ class Data(object):
         test_data = self.load_test()
         self._helper_function()
         
-        # 의미없고 null 값이 대부분인 칼럼들을 item_frame에서 drop
+        # 의미없고 null 값이 대부분인 칼럼들을 item_frame에서 drop, null 있는 몇 데이터 행도 drop
         item_frame.drop(item_frame.columns[3], axis =1, inplace=True)    
         item_frame.drop(item_frame.columns[5], axis =1, inplace=True)    
         item_frame.dropna(axis=0, inplace=True)
