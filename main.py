@@ -55,8 +55,9 @@ def main(root_dir, dataset):
 
     print("\n<<Compare>> - Matrix Factorisation vs Classification")
     # compare to simple classification model
-    knn = ml_handler.classification()
-    knn_mse = ml_handler.test_classification(knn)
+    c_model = 'knn'
+    knn = ml_handler.classification(c_model)
+    knn_mse = ml_handler.test_classification(knn, c_model)
 
     print(f'MF MSE: {mf_mse:.4f}, KNN MSE: {knn_mse:.4f}')
     print(f'MF is better than KNN: {mf_mse < knn_mse}')

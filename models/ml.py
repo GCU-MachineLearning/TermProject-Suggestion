@@ -107,7 +107,10 @@ class ML:
             if (step % 10) == 0:
                 print("Iteration: %d ; error = %.4f" % (step, mse))
 
+        print(training_process)
+        
         return P, Q, b_u, b_i, b, training_process
+
 
     def test_matrix_factorisation(self, P, Q, b_u, b_i, b):
         """
@@ -175,38 +178,62 @@ class ML:
 
 
 
-
-
-
-
-    def library_matrix_factorization(self):
+    def clustering(self, cluster_type):
         """
-        :param:
-        :return:
+        :param: cluster_type : type of clustering model
+        :return: trained model
         """
-        # from implicit.als import AlternatingLeastSquares
-        pass
+        # Load training data
+        train_data, _, _ = self.data_handler.load_data()
+        train_data = train_data.drop(columns=['timestamp'])
+        train_data = train_data.values
 
-    def clustering(self):
-        """
-        :param: 추가 하실 파라미터 에 대한 간략한 설명
-        :return: return 값에 대한 간략한 설명
-        """
-        pass
+        if cluster_type == 'kmeans' :
+          from sklearn.cluster import KMeans
+          
+          # Create KMeans Cluster
+          kmeans = KMeans(n_cluster=3, max_iter=300, ramdom_state=42)
 
-    def classification(self, c_type: str = 'knn'):
+          # Fit data
+          kmeans.fit(train_data)
+          return kmeans
+
+        elif cluster_type == 'spectral' :
+          from sklearn.cluster import SpectralClustering
+
+          # Create spectral Cluster
+          spectral = SpectralClustering(n_cluster=3, ramdom_state=42)
+
+          # Fit data
+          spectral.fit(train_data)
+          return spectral
+        
+        elif cluster_type == 'dbscan' :
+          from sklearn.cluster import DBSCAN
+
+          # Create spectral Cluster
+          dbscan = DBSCAN(eps=0.3, min_samples=10)
+
+          # Fit data
+          dbscan.fit(train_data)
+          return dbscan
+
+        else :
+          raise ValueError('Invalid type of clustering model')
+
+    def classification(self, c_type) :
         """
         Use various classification model
         :param: c_type: type of classification model
         :return: trained model only
         """
+        # Load training data
+        train_data, _, _ = self.data_handler.load_data()
+        train_data = train_data.drop(columns=['timestamp'])
+        train_data = train_data.values
+        
         if c_type == 'knn':
             from sklearn.neighbors import KNeighborsClassifier
-
-            # Load training data
-            train_data, _, _ = self.data_handler.load_data()
-            train_data = train_data.drop(columns=['timestamp'])
-            train_data = train_data.values
 
             # Create KNN classifier
             knn = KNeighborsClassifier(n_neighbors=5)
@@ -216,20 +243,48 @@ class ML:
 
             return knn  # return trained model
 
-        elif c_type == 'other_model':
-            pass
+        elif c_type == 'decisionTree':
+            from sklearn.tree import DecisionTreeClassifier
 
+            # Create DecisionTree Classifier
+            decisionT = DecisionTreeClassifier(max_depth=5, criterion='gini', random_state=0)
+
+            # Train the classifier
+            decisionT.fit(train_data[:, 0:2], train_data[:, 2])
+
+            return decisionT  # return trained model
+
+        elif c_type == 'svm':
+            from sklearn.svm import SVR
+
+            # Create DecisionTree Classifier
+            svm = SVR(kernel='rbf', C=0.1, gamma = 0.5)
+
+            # Train the classifier
+            svm.fit(train_data[:, 0:2], train_data[:, 2])
+            return svm  # return trained model
+        
+        elif c_type == 'randomforest' :
+            from sklearn.ensemble import RandomForestClassifier
+            
+            # Create DecisionTree Classifier
+            r_forest= RandomForestClassifier(criterion='entropy', bootstrap=True, random_state=42, max_depth=5)
+
+            # Train the classifier
+            r_forest.fit(train_data[:, 0:2], train_data[:, 2])
+            return r_forest  # return trained model
+            
         else:
             raise ValueError('Invalid type of classification model')
 
-    def test_classification(self, trained_model, c_type: str = 'knn'):
+    def test_classification(self, trained_model, c_type):
         """
         :param: trained_model: trained model
         :param: c_type: type of classification model
         :return: accuracy
         """
         assert trained_model is not None, 'trained model is None'
-        if c_type == 'knn':
+        if c_type == 'knn' or c_type =='decisionTree' or c_type == 'svm' :
             # Load test data
             test_data = self.data_handler.load_test()
             test_data = test_data.drop(columns=['timestamp'])
@@ -239,7 +294,6 @@ class ML:
             mse = np.sum((predictions - test_data[:, 2]) ** 2) / len(test_data)
 
             return mse
-        elif c_type == 'other_model':
-            pass
+
         else:
             raise ValueError('Invalid type of classification model')
