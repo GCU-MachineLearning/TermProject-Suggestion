@@ -23,23 +23,154 @@ ml.py 에서 구현 된 Matrix factorization 은 user_id, item_id 를 통해 rat
 
 class Filtering:
     def __init__(self, data_handler):
-        """
-        :param: data_handler: data handler
-        """
         self.data_handler = data_handler
 
-    def model_based(self):
-        """
-        Model-based collaborative filtering
-        Library used: ?
-        """
-        pass
+    def svd(self, userID, num_recommendations):
+        import numpy as np
+        import pandas as pd
+        from scipy.sparse.linalg import svds
 
-    def memory_based(self):
-        """
-        Memory-based collaborative filtering
-        """
-        pass
+        ratings = self.data_handler.load_test()
+
+        # make the format of ratings matrix to be one row per user and one column per movie
+        Ratings = ratings.pivot(
+            index='user_id', columns='item_id', values='rating').fillna(0)
+        R = Ratings.values
+        user_ratings_mean = np.mean(R, axis=1)
+        Ratings_demeaned = R - user_ratings_mean.reshape(-1, 1)
+
+        U, sigma, Vt = svds(Ratings_demeaned, k=50)
+
+        # to leverage matrix multiplication to get predictions, convert the Σ (now are values) to the diagonal matrix form
+        sigma = np.diag(sigma)
+
+        # add the user means back to get the actual star ratings prediction
+        all_user_predicted_ratings = np.dot(
+            np.dot(U, sigma), Vt) + user_ratings_mean.reshape(-1, 1)
+
+        preds = pd.DataFrame(all_user_predicted_ratings,
+                             columns=Ratings.columns)
+        movies = self.data_handler.load_item()
+        movies = movies[["movie_id", "movie_title"]]
+        movies = movies.rename(columns={'movie_id': 'item_id'})
+
+        ratings = self.data_handler.load_test()
+
+        # Get and sort the user's predictions
+        user_row_number = userID - 1  # User ID starts at 1, not 0
+        sorted_user_predictions = preds.iloc[user_row_number].sort_values(
+            ascending=False)  # User ID starts at 1
+
+        # Get the user's data and merge in the movie information.
+        user_data = ratings[ratings.user_id == (userID)]
+        user_full = (user_data.merge(movies, how='left', left_on='item_id', right_on='item_id').
+                     sort_values(['rating'], ascending=False)
+                     )
+
+        print('User {0} has already rated {1} movies.'.format(
+            userID, user_full.shape[0]))
+        print('Recommending highest {0} predicted ratings movies not already rated.'.format(
+            num_recommendations))
+
+        # Recommend the highest predicted rating movies that the user hasn't seen yet.
+        recommendations = (movies[~movies['item_id'].isin(user_full['item_id'])].
+                           merge(pd.DataFrame(sorted_user_predictions).reset_index(), how='left',
+                                 left_on='item_id',
+                                 right_on='item_id').
+                           rename(columns={user_row_number: 'Predictions'}).
+                           sort_values('Predictions', ascending=False).
+                           iloc[:num_recommendations, :-1]
+                           )
+
+        # return recommendations - top similar users rated movies
+        return recommendations
+
+    def user_based_recommend(self, user_id, k=20, top_n=5):
+        import pandas as pd
+
+        test_df = self.data_handler.load_test()
+
+        # create user-tiem matrix where the rows will be the users, the columns will be the movies
+        # and the datafrane us filled with the rating the user has given.
+        user_item_m = pd.pivot_table(
+            test_df, values='rating', index='user_id', columns='item_id').fillna(0)
+
+        # Similarity between vectors, we want to find a proximity measure between all users using the cosine similarity.
+        from sklearn.metrics.pairwise import cosine_similarity
+        X_user = cosine_similarity(user_item_m)
+
+        # Get location of the actual movie in the User-Items matrix
+        user_ix = user_item_m.index.get_loc(user_id)
+        # Use it to index the User similarity matrix
+        user_similarities = X_user[user_ix]
+        # obtain the indices of the top k most similar users
+        most_similar_users = user_item_m.index[user_similarities.argpartition(
+            -k)[-k:]]
+        # Obtain the mean ratings of those users for all movies
+        rec_movies = user_item_m.loc[most_similar_users].mean(
+            0).sort_values(ascending=False)
+        # Discard already seen movies
+        m_seen_movies = user_item_m.loc[user_id].gt(0)
+        seen_movies = m_seen_movies.index[m_seen_movies].tolist()
+        rec_movies = rec_movies.drop(seen_movies).head(top_n)
+        rec_movies = rec_movies.index.to_frame().reset_index(drop=True)
+
+        movies = self.data_handler.load_item()
+        movies = movies[["movie_id", "movie_title"]]
+
+        movie_lists = rec_movies.values.tolist()
+
+        result = []
+        # change id values to corresponding movie title
+        for i in range(0, len(movie_lists)):
+            for j in range(0, len(movies["movie_id"].axes[0])):
+                if movie_lists[i] == movies["movie_id"][j]:
+                    result.append(movies["movie_title"][j])
+                    break
+
+        # return recommendations - top similar users rated movies
+        return result
+
+    def item_based_recommend(self, item_id, k=5):
+        import pandas as pd
+
+        test_df = self.data_handler.load_test()
+
+        # create user-tiem matrix where the rows will be the users, the columns will be the movies
+        # and the datafrane us filled with the rating the user has given.
+        user_item_m = pd.pivot_table(
+            test_df, values='rating', index='user_id', columns='item_id').fillna(0)
+
+        # Similarity between vectors, we want to find a proximity measure between all movies using the cosine similarity.
+        from sklearn.metrics.pairwise import cosine_similarity
+        X_item = cosine_similarity(user_item_m.T)
+        items = self.data_handler.load_item()
+
+        liked = items.loc[items.movie_id.eq(item_id), 'movie_title'].item()
+        print(f"Because you liked <{liked}>, we'd recommend you to watch...")
+        # get index of movie
+        ix = user_item_m.columns.get_loc(item_id)
+        # Use it to index the Item similarity matrix
+        i_sim = X_item[ix]
+        # obtain the indices of the top k most similar items
+        most_similar_itmes = user_item_m.columns[i_sim.argpartition(
+            -(k+1))[-(k+1):]]
+
+        movies = self.data_handler.load_item()
+        movies = movies[["movie_id", "movie_title"]]
+
+        movie_lists = most_similar_itmes.values.tolist()
+
+        result = []
+        # change id values to corresponding movie title
+        for i in range(0, len(movie_lists)):
+            for j in range(0, len(movies["movie_id"].axes[0])):
+                if movie_lists[i] == movies["movie_id"][j]:
+                    result.append(movies["movie_title"][j])
+                    break
+
+        # return recommendations - top similar users rated movies
+        return result
 
     def hybrid(self):
         """

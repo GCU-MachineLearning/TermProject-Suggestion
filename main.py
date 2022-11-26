@@ -62,14 +62,38 @@ def main(root_dir, dataset):
     print(f'MF MSE: {mf_mse:.4f}, KNN MSE: {knn_mse:.4f}')
     print(f'MF is better than KNN: {mf_mse < knn_mse}')
 
-    # suggest items to user
+    # suggest items to user via classificatoin
     user_data = data_handler.load_user()
     user_id = 1
     movie_list = ml_handler.movie_suggestion_mf(user_id, [P, Q, b_u, b_i, b])
-    print("\n<<Suggestion>>")
-    print(f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')
+    print("\n<<Suggestion via classificatoin>>")
+    print(
+        f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')
     for movie in movie_list[:5]:
         print(movie)
+
+    print(data_handler.load_item().columns)
+
+    user_data = data_handler.load_user()
+    user_id = 1
+    print("\n<<Suggestion via SVD>>")
+    print(
+        f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')
+    result = filtering_handler.svd(user_id, 5)  # recommend 5 movies
+    print(result)
+
+    user_data = data_handler.load_user()
+    user_id = 1
+    print("\n<<Suggestion via uesr-based filtering>>")
+    print(
+        f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')
+    result = filtering_handler.user_based_recommend(user_id)
+    print(result)
+
+    item_id = 1
+    print("\n<<Suggestion via item-based filtering>>")
+    result = filtering_handler.item_based_recommend(item_id)
+    print(result)
 
 
 if __name__ == '__main__':
