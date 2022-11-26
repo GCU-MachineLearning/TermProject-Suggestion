@@ -284,7 +284,7 @@ class ML:
         :return: accuracy
         """
         assert trained_model is not None, 'trained model is None'
-        if c_type == 'knn' or c_type =='decisionTree' or c_type == 'svm' :
+        if c_type == 'knn' or c_type =='decisionTree' or c_type == 'svm' or c_type =='randomforest' :
             # Load test data
             test_data = self.data_handler.load_test()
             test_data = test_data.drop(columns=['timestamp'])
