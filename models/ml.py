@@ -5,6 +5,7 @@ Module for handling machine learning model
     2. Clustering: Can be used as a recommendation system (just for reference)
     3. Classification: Compare with Matrix Factorization
 """
+import numpy as np
 
 """
 << 지울 주석 >>
@@ -23,8 +24,6 @@ main.py 함수에서 보셨듯, 이렇게 학습된 rating 과 다양한 classif
 때문에, 다양한 classification 방법을 추가 하여, 간단히 비교하는 것도 좋아 보입니다. 
 """
 
-import numpy as np
-
 
 class ML:
     def __init__(self, data_handler):
@@ -35,7 +34,7 @@ class ML:
         """
         self.data_handler = data_handler
 
-    def matrix_factorization(self, K=20, steps=100, alpha=0.001, beta=0.02):
+    def matrix_factorization(self, K=20, steps=10001, alpha=0.001, beta=0.02, save: bool = False):
         """
         Matrix Factorization using Gradient Descent
         :param: K: number of latent features
@@ -45,6 +44,8 @@ class ML:
         :return: the final matrices P and Q
         """
         data, n_users, n_items = self.data_handler.load_data()
+        test_mse_lst = []
+        train_mse_lst = []
 
         # Initialize the user and item latent feature matrices
         """ << 지울 주석 >>
@@ -107,10 +108,62 @@ class ML:
             if (step % 10) == 0:
                 print("Iteration: %d ; error = %.4f" % (step, mse))
 
+                mf_mse = self.test_matrix_factorisation(P, Q, b_u, b_i, b)
+                test_mse_lst.append(mf_mse)
+                train_mse_lst.append(mse)
+                print("TEST MSE - MF MSE: {}".format(mf_mse))
+
         print(training_process)
+
+        if save:
+            self.save_model(P, Q, b_u, b_i, b, iteration=steps)
+            self.draw_plot(test_mse_lst, train_mse_lst)
         
         return P, Q, b_u, b_i, b, training_process
 
+    def draw_plot(self, test_mse_lst, train_mse_lst):
+        from matplotlib import pyplot as plt
+
+        plt.plot(test_mse_lst, label='test_mse', color='red')
+        plt.plot(train_mse_lst, label='train_mse', color='blue')
+        plt.xlabel('iteration: x10')
+        plt.ylabel('MSE')
+        plt.legend()
+        plt.show()
+
+    def save_model(self, P, Q, b_u, b_i, b, iteration):
+        """
+        Save model
+        :param P, Q, b_u, b_i, b: model parameter
+        :param iteration: number of iteration
+        :return: NaN
+        """
+
+        np.save(f'./pretrained_model/P_{iteration}.npy', P)
+        np.save(f'./pretrained_model/Q_{iteration}.npy', Q)
+        np.save(f'./pretrained_model/b_u_{iteration}.npy', b_u)
+        np.save(f'./pretrained_model/b_i_{iteration}.npy', b_i)
+        np.save(f'./pretrained_model/b_{iteration}.npy', b)
+
+    def load_model(self, iteration):
+        """
+        Load pretrained-model parameter
+        :param iteration: iteration number
+        :return: trained_model parameter
+        """
+
+        # check if the model path exists
+        import os
+        if not os.path.exists('pretrained_model'):
+            raise Exception('The model path does not exist. Please train the model first.')
+
+        P = np.load(f'./pretrained_model/P_{iteration}.npy')
+        Q = np.load(f'./pretrained_model/Q_{iteration}.npy')
+        b_u = np.load(f'./pretrained_model/b_u_{iteration}.npy')
+        b_i = np.load(f'./pretrained_model/b_i_{iteration}.npy')
+        b = np.load(f'./pretrained_model/b_{iteration}.npy')
+
+        return P, Q, b_u, b_i, b
 
     def test_matrix_factorisation(self, P, Q, b_u, b_i, b):
         """
@@ -175,8 +228,6 @@ class ML:
 
         movie_score.sort(key=lambda x: x[1], reverse=True)
         return movie_score
-
-
 
     def clustering(self, cluster_type):
         """
@@ -264,7 +315,7 @@ class ML:
             svm.fit(train_data[:, 0:2], train_data[:, 2])
             return svm  # return trained model
         
-        elif c_type == 'randomforest' :
+        elif c_type == 'randomForest':
             from sklearn.ensemble import RandomForestClassifier
             
             # Create DecisionTree Classifier
@@ -284,7 +335,7 @@ class ML:
         :return: accuracy
         """
         assert trained_model is not None, 'trained model is None'
-        if c_type == 'knn' or c_type =='decisionTree' or c_type == 'svm' or c_type =='randomforest' :
+        if c_type == 'knn' or c_type =='decisionTree' or c_type == 'svm' or c_type =='randomForest' :
             # Load test data
             test_data = self.data_handler.load_test()
             test_data = test_data.drop(columns=['timestamp'])

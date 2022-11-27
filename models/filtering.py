@@ -147,7 +147,7 @@ class Filtering:
         items = self.data_handler.load_item()
 
         liked = items.loc[items.movie_id.eq(item_id), 'movie_title'].item()
-        print(f"Because you liked <{liked}>, we'd recommend you to watch...")
+        print(f"\tBecause you liked <{liked}>, we'd recommend you to watch...")
         # get index of movie
         ix = user_item_m.columns.get_loc(item_id)
         # Use it to index the Item similarity matrix
