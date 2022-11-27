@@ -69,7 +69,6 @@ def main(root_dir, dataset):
     for movie in movie_list[:5]:
         print(f'\tMovie title: {movie[0]}, predicted rating: {movie[1]}')
 
-    user_data = data_handler.load_user()
     user_id = 1
     print("\n<<Suggestion via SVD>>")
     print(
@@ -91,8 +90,16 @@ def main(root_dir, dataset):
     for movie in result:
         print(f'\tMovie title: {movie}')
 
-    print("\n<<Suggestion finished>>\n")
+    title = 'Toy Story (1995)'
+    print("\n<<Suggestion via content-based filtering>>")
+    result = filtering_handler.content_based_recommend(title)
+    result = result.values.tolist()
+    for movie in result:
+        if movie == title: continue # print except the input film
+        print(f'\tMovie title: {movie}')
 
+    print("\n<<Suggestion finished>>\n")
+    
 
 if __name__ == '__main__':
     ROOT_DIR = 'datasets/ml-100k'

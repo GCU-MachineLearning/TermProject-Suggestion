@@ -158,8 +158,48 @@ class Filtering:
         # return recommendations - top similar users rated movies
         return result
 
-    def hybrid(self):
-        """
-        Hybrid collaborative filtering
-        """
-        pass
+    def content_based_recommend(self, title):
+        import pandas as pd
+
+        # load ratings data from each user
+        df = self.data_handler.load_test()
+        # load movie info data
+        movie_titles = self.data_handler.load_item()
+
+        # extract two columns and rename them for future merge
+        movie_titles = movie_titles[["movie_id", "movie_title"]]
+        movie_titles = movie_titles.rename(columns={'movie_id': 'item_id', 'movie_title': 'title'})
+
+        # merge user ratings dataframe and movie info dataframe
+        df = pd.merge(df, movie_titles, on='item_id')
+
+        # title + average rating data we viewed above and recreate it in a separate dataframe giving films alongside their average ratings
+        ratings_df = pd.DataFrame(df.groupby('title')['rating'].mean())
+        ratings_df.rename(columns={'rating': 'average_rating'}, inplace=True)
+
+        # adding number of ratings data from ratings info df
+        ratings_df['num_of_ratings'] = pd.DataFrame(df.groupby('title')['rating'].count())
+
+        # convert df into the equivalent of an X matrix
+        user_movie_matrix = df.pivot_table(values='rating' , index='user_id' , columns='title' )
+
+        # get user ratings for film
+        film_x_user_ratings = user_movie_matrix[title]
+        # create pandas series of correlations for all films with film_x
+        similar_to_film_x = user_movie_matrix.corrwith(film_x_user_ratings)
+        # convert to df
+        corr_film_x = pd.DataFrame(similar_to_film_x, columns=['Correlation'])
+        # drop nulls
+        corr_film_x.dropna(inplace=True)
+        # join ratings info to enbale filtering of films with low nums of ratings
+        corr_film_x = corr_film_x.join(ratings_df['num_of_ratings'])
+        # apply min number of reviews(30) filter
+        new_corr_film_x = corr_film_x[corr_film_x['num_of_ratings'] >= 30]
+        # apply min correlation(0.9) filter
+        new_corr_film_x = corr_film_x[corr_film_x['Correlation'] >= 0.9]
+        # sort into ascending order
+        new_corr_film_x = new_corr_film_x.sort_values('Correlation',ascending=False).head(20)
+        # return films that have correlation larger than 0.9
+        result = new_corr_film_x.reset_index()['title']
+        return result
+
