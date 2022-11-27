@@ -2,25 +2,6 @@ import datasets.data_utils as data_utils
 from models import ml, filtering
 
 
-""" << 지울 주석 >> 
-Main 에서 위에서 정의한 handler 들을 사용 하여 
- - data load + data preprocessing - data_handler
- - 다양한 ML model 들 (matrix factorisation 및 clustering / classification) - ml_handler
- - 다양한 filtering model 들 (memory-based / model-based / hybrid) - filtering_handler
-을 진행 하게 됩니다. 
-
-<< TODO >>
-data preprocessing 의 경우 ./datasets/data_utils.py 의 Data class      내부의 preprocess() 함수를 작성 해 주시면 됩니다. 
-machine learning   의 경우 ./models/ml.py           의 ML class        내부의 matrix_factorisation, classification, clustering 함수를 작성 해 주시면 됩니다.
-filtering          의 경우 ./models/filtering.py    의 Filtering class 내부의 model_based, memory_based, hybrid 함수를 작성 해 주시면 됩니다.
-
-이 코드를 colab 등에서 실행 시키 시려면, 
-1. 이 코드를 google drive 에 올리고,
-2. google drive 에서 colab 을 실행 시키고, colab 에서 google drive 에 접근한 뒤, main.py 가 존재하는 경로로 cd 한 뒤,
-3. !python main.py 커맨드 를 입력 하면 됩니다. 혹은 !sh runner.sh (일반적인 터미널 명령 앞에 ! 붙여 주면 colab 에서 실행 가능 합니다.)
-"""
-
-
 def main(root_dir, dataset):
 
     # DECLARE HANDLER
@@ -36,21 +17,16 @@ def main(root_dir, dataset):
     ml_handler = ml.ML(data_handler)
     filtering_handler = filtering.Filtering(data_handler)
 
-    """ << 지울 주석 >> 
-    위의 과정 까지 handler 들을 선언 하고, 실제 pipeline 은 아래 부터 구성 됩니다. 
-    """
-
     # Step 1: train model using preprocessed data
     """
-    # P, Q = 각 user, item 의 latent vector
-    # b_u, b_i = 각 user, item 의 bias
+    # P, Q = latent vector
+    # b_u, b_i = each bias (user, item)
     # b = global bias
-    # training_process = 매 step 마다의 loss 값: 혹시 몰라서 저장 하도록 했는데, 필요 없으면 버려 주세요. 
     """
 
     is_pretrained = True
     save = False
-    iteration = 100
+    iteration = 10000
 
     if is_pretrained:
         print("<<Load pretrained model>> - Matrix Factorisation, iteration: {}".format(iteration))
@@ -65,7 +41,7 @@ def main(root_dir, dataset):
     print("\n<<Compare>> - Matrix Factorisation vs Classification")
     # compare to simple classification model
     classifications = ['knn', 'decisionTree', 'randomForest', 'svm']
-    classifications = ['knn', 'decisionTree', 'randomForest']
+    # classifications = ['knn', 'decisionTree', 'randomForest']
     classifications_mse = []
 
     for classification in classifications:
@@ -102,8 +78,6 @@ def main(root_dir, dataset):
     for movie in result['movie_title']:
         print(f'\tMovie title: {movie}')
 
-    user_data = data_handler.load_user()
-    user_id = 1
     print("\n<<Suggestion via user-based filtering>>")
     print(
         f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')

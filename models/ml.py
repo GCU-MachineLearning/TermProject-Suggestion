@@ -7,23 +7,6 @@ Module for handling machine learning model
 """
 import numpy as np
 
-"""
-<< 지울 주석 >>
-전체 흐름을 보기 위해서 matrix factorization 함수를 우선 작성 하였 습니다.
-이 matrix factorization 함수는 user_id, item_id, rating 을 통해 학습 하고, 
-user_id, item_id 에 따른 rating 을 예측 하도록 우선 구현 되어 있습 니다. 
-
-matrix_factorization() >> 학습하고, 학습된 파라미터를 반환합니다.
-test_matrix_factorization() >> MSE 를 계산합니다.
-movie_suggestion_mf() >> ratings 순서대로 영화를 추천 합니다.
-
-(N 이라는 사용자에 대해서, X 라는 영화에 대한 평점을 예측함으로써, N에게 X 라는 영화가 추천(= 높은 평점) 할지, 아닐지(= 낮은 평점)를 판단합니다.)
-
-구현 된 함수들은 제가 틀을 짜기 위해 느낌 보려고 작성 한 것이기 때문에, 자유롭게 날리시거나, 수정해주시면 감사할 것 같습니다. 
-main.py 함수에서 보셨듯, 이렇게 학습된 rating 과 다양한 classifier 를 통해 예츠된 rating 을 비교 하고 있습 니다.
-때문에, 다양한 classification 방법을 추가 하여, 간단히 비교하는 것도 좋아 보입니다. 
-"""
-
 
 class ML:
     def __init__(self, data_handler):
@@ -48,9 +31,6 @@ class ML:
         train_mse_lst = []
 
         # Initialize the user and item latent feature matrices
-        """ << 지울 주석 >>
-        n_user + 1 한 이유는, user_id 가 1부터 시작 해서 해당 부분 처리 해주기 위해 진행 했습 니다. 
-        """
         P = np.random.normal(scale=1. / K, size=(n_users + 1, K))  # n_users + 1 for the bias term
         Q = np.random.normal(scale=1. / K, size=(n_items + 1, K))  # n_items + 1 for the bias term
 
@@ -72,15 +52,6 @@ class ML:
         for step in range(steps):
             np.random.shuffle(samples)
 
-            """ << 지울 주석 >>
-            아래 과정은, matrix factorization 을 위한 gradient descent 를 구현 한 것 입니다.
-            gradient descent 를 구현 하는 부분이 필요 한지, 혹은 sklearn 을 사용할 지 proposal 단계 에서
-            명확히 확정 되지 않은 것 같아, 일단은 이렇게 구현 해 두었 습니다.
-            
-            추후 코드 작성 과정 에서 필요 하지 않다고 판단 되시면, 그냥 라이브러리 사용 해 주시면 될 것 같습 니다. 
-            정확도 는 iteration = 200 기준(나머지 파라미터 기본 설정 유지 시), train_mse = 0.5277 입니다. 
-            일반 적인 노트북 에서 약 2~3 분 정도 소요 됩니다. 
-            """
             for i, j, r in samples:
                 # Computer prediction and error
                 prediction = b + b_u[i] + b_i[j] + P[i, :].dot(Q[j, :].T)
@@ -228,49 +199,6 @@ class ML:
 
         movie_score.sort(key=lambda x: x[1], reverse=True)
         return movie_score
-
-    def clustering(self, cluster_type):
-        """
-        :param: cluster_type : type of clustering model
-        :return: trained model
-        """
-        # Load training data
-        train_data, _, _ = self.data_handler.load_data()
-        train_data = train_data.drop(columns=['timestamp'])
-        train_data = train_data.values
-
-        if cluster_type == 'kmeans' :
-          from sklearn.cluster import KMeans
-          
-          # Create KMeans Cluster
-          kmeans = KMeans(n_cluster=3, max_iter=300, ramdom_state=42)
-
-          # Fit data
-          kmeans.fit(train_data)
-          return kmeans
-
-        elif cluster_type == 'spectral' :
-          from sklearn.cluster import SpectralClustering
-
-          # Create spectral Cluster
-          spectral = SpectralClustering(n_cluster=3, ramdom_state=42)
-
-          # Fit data
-          spectral.fit(train_data)
-          return spectral
-        
-        elif cluster_type == 'dbscan' :
-          from sklearn.cluster import DBSCAN
-
-          # Create spectral Cluster
-          dbscan = DBSCAN(eps=0.3, min_samples=10)
-
-          # Fit data
-          dbscan.fit(train_data)
-          return dbscan
-
-        else :
-          raise ValueError('Invalid type of clustering model')
 
     def classification(self, c_type) :
         """

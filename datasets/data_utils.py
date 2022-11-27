@@ -13,13 +13,6 @@ import os
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-""" << 지울 주석 >>
-우선 데이터 로드를 ratings, user, item 그리고 test 위한 test 정도로 두었 습니다. 
-참조 자료는 ( https://velog.io/@kms1003/추천시스템-01.-기본적인-추천시스템 ) 입니다. 
-혹 더 필요 하시 다면, 아래의 load_~ 함수를 추가 해 주시면 될 것 같습니다. 
-
-"""
-
 
 class Data(object):
     def __init__(self, data_dir, dataset):
