@@ -11,72 +11,13 @@ class Filtering:
     def __init__(self, data_handler):
         self.data_handler = data_handler
 
-    def svd(self, userID, num_recommendations):
-        import numpy as np
-        import pandas as pd
-        from scipy.sparse.linalg import svds
-
-        ratings = self.data_handler.load_test()
-
-        # make the format of ratings matrix to be one row per user and one column per movie
-        Ratings = ratings.pivot(
-            index='user_id', columns='item_id', values='rating').fillna(0)
-        R = Ratings.values
-        user_ratings_mean = np.mean(R, axis=1)
-        Ratings_demeaned = R - user_ratings_mean.reshape(-1, 1)
-
-        U, sigma, Vt = svds(Ratings_demeaned, k=50)
-
-        # to leverage matrix multiplication to get predictions, convert the Σ (now are values) to the diagonal matrix form
-        sigma = np.diag(sigma)
-
-        # add the user means back to get the actual star ratings prediction
-        all_user_predicted_ratings = np.dot(
-            np.dot(U, sigma), Vt) + user_ratings_mean.reshape(-1, 1)
-
-        preds = pd.DataFrame(all_user_predicted_ratings,
-                             columns=Ratings.columns)
-        movies = self.data_handler.load_item()
-        movies = movies[["movie_id", "movie_title"]]
-        movies = movies.rename(columns={'movie_id': 'item_id'})
-
-        ratings = self.data_handler.load_test()
-
-        # Get and sort the user's predictions
-        user_row_number = userID - 1  # User ID starts at 1, not 0
-        sorted_user_predictions = preds.iloc[user_row_number].sort_values(
-            ascending=False)  # User ID starts at 1
-
-        # Get the user's data and merge in the movie information.
-        user_data = ratings[ratings.user_id == (userID)]
-        user_full = (user_data.merge(movies, how='left', left_on='item_id', right_on='item_id').
-                     sort_values(['rating'], ascending=False)
-                     )
-
-        print('User {0} has already rated {1} movies.'.format(
-            userID, user_full.shape[0]))
-        print('Recommending highest {0} predicted ratings movies not already rated.'.format(
-            num_recommendations))
-
-        # Recommend the highest predicted rating movies that the user hasn't seen yet.
-        recommendations = (movies[~movies['item_id'].isin(user_full['item_id'])].
-                           merge(pd.DataFrame(sorted_user_predictions).reset_index(), how='left',
-                                 left_on='item_id',
-                                 right_on='item_id').
-                           rename(columns={user_row_number: 'Predictions'}).
-                           sort_values('Predictions', ascending=False).
-                           iloc[:num_recommendations, :-1]
-                           )
-
-        # return recommendations - top similar users rated movies
-        return recommendations
-
+    
     def user_based_recommend(self, user_id, k=20, top_n=5):
         import pandas as pd
-
+    
         test_df = self.data_handler.load_test()
 
-        # create user-tiem matrix where the rows will be the users, the columns will be the movies
+        # create user-item matrix where the rows will be the users, the columns will be the movies
         # and the datafrane us filled with the rating the user has given.
         user_item_m = pd.pivot_table(
             test_df, values='rating', index='user_id', columns='item_id').fillna(0)
@@ -114,7 +55,7 @@ class Filtering:
                     result.append(movies["movie_title"][j])
                     break
 
-        # return recommendations - top similar users rated movies
+        # return recommendations
         return result
 
     def item_based_recommend(self, item_id, k=5):
@@ -122,7 +63,7 @@ class Filtering:
 
         test_df = self.data_handler.load_test()
 
-        # create user-tiem matrix where the rows will be the users, the columns will be the movies
+        # create user-item matrix where the rows will be the users, the columns will be the movies
         # and the datafrane us filled with the rating the user has given.
         user_item_m = pd.pivot_table(
             test_df, values='rating', index='user_id', columns='item_id').fillna(0)
@@ -155,7 +96,7 @@ class Filtering:
                     result.append(movies["movie_title"][j])
                     break
 
-        # return recommendations - top similar users rated movies
+        # return recommendations
         return result
 
     def content_based_recommend(self, title):

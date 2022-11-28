@@ -69,14 +69,9 @@ def main(root_dir, dataset):
     for movie in movie_list[:5]:
         print(f'\tMovie title: {movie[0]}, predicted rating: {movie[1]}')
 
-    user_id = 1
-    print("\n<<Suggestion via SVD>>")
-    print(
-        f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')
-    result = filtering_handler.svd(user_id, 5)  # recommend 5 movies
-    for movie in result['movie_title']:
-        print(f'\tMovie title: {movie}')
 
+    user_data = data_handler.load_user()
+    user_id = 1
     print("\n<<Suggestion via user-based filtering>>")
     print(
         f'For user [Age: {user_data["age"][user_id]}, Gender: {user_data["sex"][user_id]}], who works as {user_data["occupation"][user_id]}...')
