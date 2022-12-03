@@ -1,9 +1,12 @@
 """
 Module for handling filtering algorithms
 3 methods are provided:
-    1. model-based collaborative filtering: SVD, (Matrix Factorization << 지울 주석: 이 부분은 ml.py 에 있습니다. >>)
-    2. memory-based filtering: User-based / Item-based
-    3. hybrid filtering: (model-based + memory-based)
+    Collaborative filtering
+    1. user_based_recommend
+    2. item_based_recommend
+    Contend-based filtering
+    3. content_based_recommend
+    
 """
 
 

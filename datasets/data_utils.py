@@ -65,16 +65,6 @@ class Data(object):
                                 names=['user_id', 'item_id', 'rating', 'timestamp'])
         return test_data
 
-    """
-    # TODO: Data preprocessing 
-    # 여기에 데이터 전처리 코드를 작성해 주시면 됩니다. 
-    # 이후, main 틀 에서 data_handler.preprocess()를 호출 하여 진행 합니다. 
-    
-    # 혹, preprocessing 을 진행 하기 위한 helper function 이 필요 하다면,
-    # 아래와 같이 _function 을 사용 하여 이 class 내부 에서만 호출 하도록 진행 해 주세요.
-    
-    # 그런데 데이터 가 너무 깨끗 해서, 어느 부분에 대해 전처리 를 진행 해야 할 지 잘 모르겠습니다. 
-    """
 
     def preprocess(self):
         """

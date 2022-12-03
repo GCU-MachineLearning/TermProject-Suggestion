@@ -167,8 +167,8 @@ class ML:
 
     def movie_suggestion_mf(self, user_id, parameter_list: list):
         """
-        특정 사용자 X 에 대해서 영화 추천을 해주는 함수 입니다.
-        X 에 대해 K 라는 영화의 예상 rating 이 높다면 -> X 가 K 를 좋아할 것이라고 예상 할 수 있습니다.
+        Function that recommend movie to specific user X.
+        If moive K has high expectation rating of user X -> Can be regarded that user X likes movie K.
 
         :param: user_id: user id
         :param: item_id: item
