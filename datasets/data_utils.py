@@ -101,6 +101,8 @@ class Data(object):
         le = LabelEncoder()
         e1 = pd.DataFrame(le.fit_transform(user_frame['sex']), columns=['sex'])
         e2 = pd.DataFrame(le.fit_transform(user_frame['occupation']), columns=['occupation'])
+        e1.index=e1.index + 1
+        e2.index=e2.index + 1       
 
         # drop original columns, ['sex', 'occupation']
         user_frame = user_frame.drop(['sex', 'occupation'], axis=1)
