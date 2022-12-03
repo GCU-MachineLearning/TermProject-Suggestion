@@ -83,6 +83,7 @@ class Data(object):
 
         # check NaN values from below three dataframes.
         # If there are NaN values, assert will be raised.
+        assert test_data.isnull().values.any() == False, "NaN values exist in test_data"        
         assert ratings.isnull().values.any() == False, "NaN values exist in ratings"
         assert user_frame.isnull().values.any() == False, "NaN values exist in user_frame"
         assert item_frame.isnull().values.any() == False, "NaN values exist in item_frame"

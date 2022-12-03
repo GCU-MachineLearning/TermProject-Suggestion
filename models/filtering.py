@@ -18,7 +18,7 @@ class Filtering:
     def user_based_recommend(self, user_id, k=20, top_n=5):
         import pandas as pd
     
-        test_df = self.data_handler.load_test()
+        _, _, _, _, _, test_df = self.data_handler.preprocess()
 
         # create user-item matrix where the rows will be the users, the columns will be the movies
         # and the datafrane us filled with the rating the user has given.
@@ -64,7 +64,7 @@ class Filtering:
     def item_based_recommend(self, item_id, k=5):
         import pandas as pd
 
-        test_df = self.data_handler.load_test()
+        _, _, _, _, _, test_df = self.data_handler.preprocess()
 
         # create user-item matrix where the rows will be the users, the columns will be the movies
         # and the datafrane us filled with the rating the user has given.
@@ -74,7 +74,7 @@ class Filtering:
         # Similarity between vectors, we want to find a proximity measure between all movies using the cosine similarity.
         from sklearn.metrics.pairwise import cosine_similarity
         X_item = cosine_similarity(user_item_m.T)
-        items = self.data_handler.load_item()
+        _, _, _, _, items, _ = self.data_handler.preprocess()
 
         liked = items.loc[items.movie_id.eq(item_id), 'movie_title'].item()
         print(f"\tBecause you liked <{liked}>, we'd recommend you to watch...")
@@ -86,7 +86,7 @@ class Filtering:
         most_similar_itmes = user_item_m.columns[i_sim.argpartition(
             -(k+1))[-(k+1):]]
 
-        movies = self.data_handler.load_item()
+        _, _, _, _, items, _ = self.data_handler.preprocess()
         movies = movies[["movie_id", "movie_title"]]
 
         movie_lists = most_similar_itmes.values.tolist()
@@ -106,9 +106,9 @@ class Filtering:
         import pandas as pd
 
         # load ratings data from each user
-        df = self.data_handler.load_test()
+        _, _, _, _, _, df = self.data_handler.preprocess()
         # load movie info data
-        movie_titles = self.data_handler.load_item()
+        _, _, _, _, movie_titles, _ = self.data_handler.preprocess()
 
         # extract two columns and rename them for future merge
         movie_titles = movie_titles[["movie_id", "movie_title"]]

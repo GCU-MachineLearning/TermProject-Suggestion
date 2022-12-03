@@ -26,7 +26,7 @@ class ML:
         :param: beta: regularization parameter
         :return: the final matrices P and Q
         """
-        data, n_users, n_items = self.data_handler.load_data()
+        data, n_users, n_items, _, _, _ = self.data_handler.preprocess()
         test_mse_lst = []
         train_mse_lst = []
 
@@ -147,7 +147,7 @@ class ML:
         """
         # Create a list of test samples
         # contains (user_id, item_id, rating)
-        test_data = self.data_handler.load_test()
+        _, _, _, _, _,test_data = self.data_handler.preprocess()
 
         rows, cols = test_data.shape
         samples = [
@@ -178,8 +178,7 @@ class ML:
         P, Q, b_u, b_i, b = parameter_list
 
         # load_test
-        test_data = self.data_handler.load_test()
-        test_data = self.data_handler.load_test()
+        _, _, _, _, _,test_data = self.data_handler.preprocess()
 
         rows, cols = test_data.shape
         samples = [
@@ -188,7 +187,7 @@ class ML:
         ]
 
         movie_score = []
-        item_name = self.data_handler.load_item()
+        _, _, _, _, item_name, _ = self.data_handler.preprocess()
 
         for _, j, r in samples:
             prediction_score = b + b_u[user_id] + b_i[j] + P[user_id, :].dot(Q[j, :].T)
@@ -207,7 +206,7 @@ class ML:
         :return: trained model only
         """
         # Load training data
-        train_data, _, _ = self.data_handler.load_data()
+        train_data, _, _, _, _, _ = self.data_handler.preprocess()
         train_data = train_data.drop(columns=['timestamp'])
         train_data = train_data.values
         
@@ -265,7 +264,7 @@ class ML:
         assert trained_model is not None, 'trained model is None'
         if c_type == 'knn' or c_type =='decisionTree' or c_type == 'svm' or c_type =='randomForest' :
             # Load test data
-            test_data = self.data_handler.load_test()
+            _, _, _, _, _, test_data = self.data_handler.preprocess()
             test_data = test_data.drop(columns=['timestamp'])
             test_data = test_data.values
 
